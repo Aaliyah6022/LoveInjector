@@ -25,7 +25,8 @@ project "LoveInjector"
 	includedirs
 	{
 		"src",
-		"%{IncludeDir.xorstr}"
+		"%{IncludeDir.xorstr}",
+		"%{IncludeDir.imgui}"
 	}
 
 	links

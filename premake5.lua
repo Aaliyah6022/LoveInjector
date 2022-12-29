@@ -25,7 +25,8 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 -- Include directories relative to root folder (solution directory)
 IncludeDir = {}
-IncludeDir["xorstr"] = "%{wks.location}/LoveInjector/vendor/xorstr/include"
+IncludeDir["xorstr"] = "%{wks.location}/LoveInjector/vendor/xorstr"
+IncludeDir["imgui"] = "%{wks.location}/LoveInjector/vendor/imgui"
 
 group "Core"
 	include "LoveInjector"
