@@ -14,8 +14,8 @@
 #include <vector>
 
 
-static int selectedMethod = NULL;
-std::vector<const char*> methods = {"Method 1", "Method 2", "Method 3", "Method 4", "Method 5", "Random Method"};
+static const char* selectedMethod = NULL;
+const char* methods[] = {"Method 1", "Method 2", "Method 3", "Method 4", "Method 5", "Random Method"};
 static char buf[256];
 ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoBackground;
 
@@ -306,7 +306,7 @@ void gui::Render() noexcept
 		//ImGuiWindowFlags_NoTitleBar
 	);
 
-
+	
 
 	ImGui::PushStyleColor(ImGuiCol_Border, ImColor(0, 0, 0, 255).Value);
 
@@ -316,10 +316,17 @@ void gui::Render() noexcept
 	ImGui::Text(" Injection Method:");
 	
 	ImGui::Spacing();
-	ImGui::Text(" Dll path:");
+	ImGui::Spacing();
+	ImGui::Spacing();
+	ImGui::Spacing();
+	ImGui::Spacing();
+	ImGui::Spacing();
+	ImGui::Spacing();
 
 	ImGui::Spacing();
-	ImGui::Text(" Target progress:");
+	ImGui::Text(" Dll path:");
+
+	ImGui::Text(" Target Process:");
 
 	ImGui::Spacing();
 	ImGui::Spacing();
@@ -335,19 +342,54 @@ void gui::Render() noexcept
 	ImGui::EndChild();
 
 	ImGui::SameLine();
-	ImGui::BeginChild("##LeftButtonSide", ImVec2(ImGui::GetWindowWidth() / 4, ImGui::GetWindowHeight() - 40), false, window_flags);
+	ImGui::BeginChild("##LeftButtonSide", ImVec2(ImGui::GetWindowWidth(), ImGui::GetWindowHeight() - 40), false, window_flags);
+
+	// Select Method
 
 	ImGui::PushItemWidth(ImGui::GetWindowWidth());
-	ImGui::Combo("##MethodsCombo", &selectedMethod, methods.data(), methods.size());
+	if (ImGui::BeginCombo("##MethodsCombo", selectedMethod, ImGuiComboFlags_NoArrowButton))
+	{
+		for (int i = 0; i < IM_ARRAYSIZE(methods); i++)
+		{
+			bool method_selected = (selectedMethod == methods[i]);
+			if (ImGui::Selectable(methods[i], method_selected))
+				selectedMethod = methods[i];
+			if (method_selected)
+				ImGui::SetItemDefaultFocus();
+		}
+		ImGui::EndCombo();
+	}
 	ImGui::PopItemWidth();
 
-	ImGui::PushItemWidth(ImGui::GetWindowWidth());
-	ImGui::InputText(" ", buf, 256);
-	ImGui::PopItemWidth();
+	// Select DLL
 
 	ImGui::PushItemWidth(ImGui::GetWindowWidth());
-	ImGui::InputText(" ", buf, 256);
+	static char szFile[260] = "";
+	static char szFilter[260] = "DLL Files\0*.DLL\0All\0*.*\0";
+	ShowFileOpenDialog(szFile, sizeof(szFile), szFilter);
+	ImGui::Text(szFile);
 	ImGui::PopItemWidth();
+
+	// Select Process
+
+	std::vector<std::string> process_names = GetProcessList();
+
+	const char** process_names_array = new const char* [process_names.size()];
+	for (size_t i = 0; i < process_names.size(); i++)
+	{
+		process_names_array[i] = process_names[i].c_str();
+	}
+
+	static int selected_process = -1;
+
+	if (ImGui::Combo(" ", &selected_process, process_names_array, (int)process_names.size()))
+	{
+		// A process was selected, do something with it...
+	}
+
+	delete[] process_names_array;
+
+	// inject button
 
 	ImGui::Button("Inject!");
 	if (ImGui::IsItemHovered())
@@ -360,14 +402,6 @@ void gui::Render() noexcept
 	
 
 
-	ImGui::EndChild();
-
-
-	ImGui::SameLine();
-	ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-	ImGui::SameLine();
-
-	ImGui::BeginChild("##RightSide", ImVec2(ImGui::GetWindowWidth() / 2, ImGui::GetWindowHeight() - 40), false, window_flags);
 	ImGui::EndChild();
 
 
