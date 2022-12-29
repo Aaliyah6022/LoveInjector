@@ -9,8 +9,19 @@
 #include "../imgui/imgui-1.89.1/imgui.h"
 #include "../imgui/imgui-1.89.1/imgui_impl_dx9.h"
 #include "../imgui/imgui-1.89.1/imgui_impl_win32.h"
+#include "../imgui/imgui-1.89.1/imgui_internal.h"
 #include <string>
 #include <vector>
+
+
+static int selectedMethod = NULL;
+std::vector<const char*> methods = {"Method 1", "Method 2", "Method 3", "Method 4", "Method 5", "Random Method"};
+static char buf[256];
+ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoBackground;
+
+const char* themes[]{ "Dark Purple", "Dark Blue", "Dark"};
+static int curTheme;
+
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(
 	HWND window,
@@ -191,7 +202,7 @@ void gui::CreateImGui() noexcept
 	ImGuiIO& io = ::ImGui::GetIO();
 
 	io.IniFilename = NULL;
-	io.Fonts->AddFontFromFileTTF("C:\\windows\\Fonts\\Tahoma.ttf", 16.0f);
+	io.Fonts->AddFontFromFileTTF("C:\\windows\\Fonts\\Georgia.ttf", 18.0f);
 
 	ImGui::StyleColorsDark();
 
@@ -251,17 +262,42 @@ void gui::Render() noexcept
 	ImGui::SetNextWindowSize({ WIDTH, HEIGHT });
 	ImGuiStyle& style = ImGui::GetStyle();
 
-	style.Colors[ImGuiCol_WindowBg] = ImColor(16, 16, 16);
-	style.Colors[ImGuiCol_ChildBg] = ImColor(24, 24, 24);
-	style.Colors[ImGuiCol_Text] = ImColor(255, 255, 255);
-	style.Colors[ImGuiCol_CheckMark] = ImColor(255, 255, 255);
+	if (curTheme == 0)
+	{
+		style.Colors[ImGuiCol_WindowBg] = ImVec4(0.39f, 0.00f, 0.63f, 0.11f);
+		style.Colors[ImGuiCol_ChildBg] = ImColor(24, 24, 24);
+		style.Colors[ImGuiCol_Text] = ImColor(255, 255, 255);
+		style.Colors[ImGuiCol_CheckMark] = ImColor(255, 255, 255);
 
-	style.Colors[ImGuiCol_Header] = ImColor(30, 30, 30);
-	style.Colors[ImGuiCol_HeaderActive] = ImColor(28, 28, 28);
-	style.Colors[ImGuiCol_HeaderHovered] = ImColor(28, 28, 28);
+		style.Colors[ImGuiCol_Header] = ImColor(30, 30, 30);
+		style.Colors[ImGuiCol_HeaderActive] = ImColor(28, 28, 28);
+		style.Colors[ImGuiCol_HeaderHovered] = ImColor(28, 28, 28);
+	}
+	else if (curTheme == 1)
+	{
+		style.Colors[ImGuiCol_WindowBg] = ImVec4(0.11f, 0.15f, 0.17f, 1.00f);
+		style.Colors[ImGuiCol_ChildBg] = ImColor(24, 24, 24);
+		style.Colors[ImGuiCol_Text] = ImColor(255, 255, 255);
+		style.Colors[ImGuiCol_CheckMark] = ImColor(255, 255, 255);
+
+		style.Colors[ImGuiCol_Header] = ImColor(30, 30, 30);
+		style.Colors[ImGuiCol_HeaderActive] = ImColor(28, 28, 28);
+		style.Colors[ImGuiCol_HeaderHovered] = ImColor(28, 28, 28);
+	}
+	else if (curTheme == 2)
+	{
+		style.Colors[ImGuiCol_WindowBg] = ImColor(16, 16, 16);
+		style.Colors[ImGuiCol_ChildBg] = ImColor(24, 24, 24);
+		style.Colors[ImGuiCol_Text] = ImColor(255, 255, 255);
+		style.Colors[ImGuiCol_CheckMark] = ImColor(255, 255, 255);
+
+		style.Colors[ImGuiCol_Header] = ImColor(30, 30, 30);
+		style.Colors[ImGuiCol_HeaderActive] = ImColor(28, 28, 28);
+		style.Colors[ImGuiCol_HeaderHovered] = ImColor(28, 28, 28);
+	}
 
 	ImGui::Begin(
-		"Luna",
+		"LoveInjector Beta v0.2",
 		&isRunning,
 		ImGuiWindowFlags_NoResize |
 		ImGuiWindowFlags_NoSavedSettings |
@@ -270,7 +306,70 @@ void gui::Render() noexcept
 		//ImGuiWindowFlags_NoTitleBar
 	);
 
+
+
 	ImGui::PushStyleColor(ImGuiCol_Border, ImColor(0, 0, 0, 255).Value);
+
+	ImGui::BeginChild("##LeftSide", ImVec2(ImGui::GetWindowWidth() / 4, ImGui::GetWindowHeight() - 40), false, window_flags);
+	
+	ImGui::Spacing();
+	ImGui::Text(" Injection Method:");
+	
+	ImGui::Spacing();
+	ImGui::Text(" Dll path:");
+
+	ImGui::Spacing();
+	ImGui::Text(" Target progress:");
+
+	ImGui::Spacing();
+	ImGui::Spacing();
+	ImGui::Spacing();
+	ImGui::Spacing();
+	ImGui::Spacing();
+	ImGui::Spacing();
+	ImGui::Spacing();
+	ImGui::Spacing();
+	ImGui::Spacing();
+	ImGui::Text(" Just messing arround:");
+
+	ImGui::EndChild();
+
+	ImGui::SameLine();
+	ImGui::BeginChild("##LeftButtonSide", ImVec2(ImGui::GetWindowWidth() / 4, ImGui::GetWindowHeight() - 40), false, window_flags);
+
+	ImGui::PushItemWidth(ImGui::GetWindowWidth());
+	ImGui::Combo("##MethodsCombo", &selectedMethod, methods.data(), methods.size());
+	ImGui::PopItemWidth();
+
+	ImGui::PushItemWidth(ImGui::GetWindowWidth());
+	ImGui::InputText(" ", buf, 256);
+	ImGui::PopItemWidth();
+
+	ImGui::PushItemWidth(ImGui::GetWindowWidth());
+	ImGui::InputText(" ", buf, 256);
+	ImGui::PopItemWidth();
+
+	ImGui::Button("Inject!");
+	if (ImGui::IsItemHovered())
+		ImGui::SetTooltip("Press for inject!");
+
+	ImGui::PushItemWidth(ImGui::GetWindowWidth());
+	ImGui::Combo("Menu Theme", &curTheme, themes, ARRAYSIZE(themes));
+	ImGui::PopItemWidth();
+
+	
+
+
+	ImGui::EndChild();
+
+
+	ImGui::SameLine();
+	ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+	ImGui::SameLine();
+
+	ImGui::BeginChild("##RightSide", ImVec2(ImGui::GetWindowWidth() / 2, ImGui::GetWindowHeight() - 40), false, window_flags);
+	ImGui::EndChild();
+
 
 	ImGui::PopStyleColor();
 

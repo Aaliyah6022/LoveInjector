@@ -11,8 +11,8 @@
 
 namespace gui
 {
-	constexpr int WIDTH = 500;
-	constexpr int HEIGHT = 300;
+	constexpr int WIDTH = 800;
+	constexpr int HEIGHT = 500;
 
 	inline bool isRunning = true;
 
