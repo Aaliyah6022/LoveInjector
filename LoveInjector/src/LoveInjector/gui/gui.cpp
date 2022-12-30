@@ -297,7 +297,7 @@ void gui::Render() noexcept
 	}
 
 	ImGui::Begin(
-		"LoveInjector Beta v0.2",
+		"LoveInjector Beta v1.3",
 		&isRunning,
 		ImGuiWindowFlags_NoResize |
 		ImGuiWindowFlags_NoSavedSettings |
@@ -372,39 +372,115 @@ void gui::Render() noexcept
 
 	// Select Process
 
-	std::vector<std::string> process_names = GetProcessList();
+	std::vector<std::pair<std::string, DWORD>> process_list = GetProcessInfo();
 
-	const char** process_names_array = new const char* [process_names.size()];
-	for (size_t i = 0; i < process_names.size(); i++)
+	const char** process_info_array = new const char* [process_list.size()];
+	for (size_t i = 0; i < process_list.size(); i++)
 	{
-		process_names_array[i] = process_names[i].c_str();
+		process_info_array[i] = process_list[i].first.c_str();
 	}
 
 	static int selected_process = -1;
 
-	if (ImGui::Combo(" ", &selected_process, process_names_array, (int)process_names.size()))
+	if (ImGui::Combo(" ", &selected_process, process_info_array, (int)process_list.size()))
 	{
 		// A process was selected, do something with it...
+
 	}
 
-	delete[] process_names_array;
+	//debug
+	DWORD process_id = process_list[selected_process].second;
+
+	std::stringstream ss;
+	ss << "Process ID: " << process_id;
+	ImGui::Text(ss.str().c_str());
+	//
 
 	// inject button
 
-	ImGui::Button("Inject!");
+	static DWORD processId = 11420;
+
+	if (ImGui::Button("Inject"))
+	{
+		if (processId != 0)
+		{
+			
+			if (szFile != "")
+			{
+				// "C:\\Users\\petre\\OneDrive\\Desktop\\WinInternalsDll.dll"
+				if (InjectDLL(processId, szFile))
+				{
+					ImGui::OpenPopup("Injection Successful");
+				}
+				else
+				{
+					ImGui::OpenPopup("Injection Failed");
+				}
+			}
+			else
+			{
+				ImGui::OpenPopup("Injection Failed - Invalid Path");
+			}
+		}
+		else
+		{
+			ImGui::OpenPopup("Injection Failed - Invalid PID");
+		}
+
+		
+	}
 	if (ImGui::IsItemHovered())
 		ImGui::SetTooltip("Press for inject!");
+	
+
+	if (ImGui::BeginPopupModal("Injection Successful", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+	{
+		ImGui::Text("The DLL was successfully injected into the target process.");
+		if (ImGui::Button("Close"))
+		{
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+	if (ImGui::BeginPopupModal("Injection Failed", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+	{
+		ImGui::Text("The injection failed. Make sure the process ID and DLL path are correct.");
+		if (ImGui::Button("Close"))
+		{
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+	if (ImGui::BeginPopupModal("Injection Failed - Invalid PID", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+	{
+		ImGui::Text("The injection failed. Make sure the process ID is selected!");
+		if (ImGui::Button("Close"))
+		{
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+	if (ImGui::BeginPopupModal("Injection Failed - Invalid Path", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+	{
+		ImGui::Text("The injection failed. Make sure the DLL path is correct!");
+		if (ImGui::Button("Close"))
+		{
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+
+
+
+
+
 
 	ImGui::PushItemWidth(ImGui::GetWindowWidth());
 	ImGui::Combo("Menu Theme", &curTheme, themes, ARRAYSIZE(themes));
 	ImGui::PopItemWidth();
 
-	
-
 
 	ImGui::EndChild();
-
-
 	ImGui::PopStyleColor();
 
 	// End render
