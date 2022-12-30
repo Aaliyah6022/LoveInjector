@@ -40,8 +40,6 @@ __inline void ShowFileOpenDialog(char* szFile, int nMaxFile, const char* szFilte
     }
 }
 
-//std::string info = pe.szExeFile + " (ID: " + std::to_string(pe.th32ProcessID) + ")";
-
 __inline std::vector<std::pair<std::string, DWORD>> GetProcessInfo()
 {
     std::vector<std::pair<std::string, DWORD>> process_info;
@@ -65,16 +63,17 @@ __inline std::vector<std::pair<std::string, DWORD>> GetProcessInfo()
                 BOOL isWow64 = FALSE;
                 if (IsWow64Process(hProcess, &isWow64)) {
                     if (isWow64) {
-                        info += " - x86 (32-bit)";
+                        info += "     [32-bit]";
+                        process_info.push_back(std::make_pair(info, pe.th32ProcessID));
                     }
                     else {
-                        info += " - x64 (64-bit)";
+                        info += "     [64-bit]";
+                        process_info.push_back(std::make_pair(info, pe.th32ProcessID));
                     }
                 }
                 CloseHandle(hProcess);
             }
 
-            process_info.push_back(std::make_pair(info, pe.th32ProcessID));
         } while (Process32Next(hSnapshot, &pe));
     }
     CloseHandle(hSnapshot);
@@ -89,6 +88,7 @@ __inline bool InjectDLL(DWORD process_id, const char* dll_path)
     HANDLE process_handle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, process_id);
     if (process_handle == NULL)
     {
+        printf("Failed to open process!\n");
         return false;
     }
 
@@ -97,6 +97,7 @@ __inline bool InjectDLL(DWORD process_id, const char* dll_path)
     if (remote_memory == NULL)
     {
         CloseHandle(process_handle);
+        printf("Failed to allocate memory!\n");
         return false;
     }
 

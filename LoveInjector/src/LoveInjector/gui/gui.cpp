@@ -15,12 +15,13 @@
 
 
 static const char* selectedMethod = NULL;
-const char* methods[] = {"Method 1", "Method 2", "Method 3", "Method 4", "Method 5", "Random Method"};
+const char* methods[] = {"LoadLibraryA", "Method 2", "Method 3", "Method 4", "Method 5", "Random Method"};
 static char buf[256];
 ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoBackground;
 
 const char* themes[]{ "Dark Purple", "Dark Blue", "Dark"};
 static int curTheme;
+static bool debug_cmd = false;
 
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(
@@ -215,6 +216,7 @@ void gui::DestroyImGui() noexcept
 	ImGui_ImplDX9_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
+	FreeConsole();
 }
 
 void gui::BeginRender() noexcept
@@ -355,7 +357,10 @@ void gui::Render() noexcept
 			if (ImGui::Selectable(methods[i], method_selected))
 				selectedMethod = methods[i];
 			if (method_selected)
+			{
 				ImGui::SetItemDefaultFocus();
+				printf("%d\n", method_selected);
+			}
 		}
 		ImGui::EndCombo();
 	}
@@ -388,42 +393,81 @@ void gui::Render() noexcept
 
 	}
 
-	//debug
 	DWORD process_id = process_list[selected_process].second;
 
-	std::stringstream ss;
-	ss << "Process ID: " << process_id;
-	ImGui::Text(ss.str().c_str());
-	//
+	if (process_id > 100000)
+	{
+		ImGui::Text("Waiting to select a process..");
+	}
+	else
+	{
+		std::stringstream ss;
+		ss << "Process ID: " << process_id;
+		ImGui::Text(ss.str().c_str());
+	}
 
 	// inject button
 
-	static DWORD processId = 11420;
-
 	if (ImGui::Button("Inject"))
 	{
-		if (processId != 0)
+		printf("Inject clicked!\n");
+		
+		if (process_id < 100000)
 		{
-			
+			std::stringstream ss;
+			ss << "Process ID: " << process_id;
+			printf("%s\n", ss.str().c_str());
+
 			if (szFile != "")
-			{
-				// "C:\\Users\\petre\\OneDrive\\Desktop\\WinInternalsDll.dll"
-				if (InjectDLL(processId, szFile))
+			{			
+				printf("Dll Path: ");
+				printf("%s\n", szFile);
+				
+				if (strcmp(selectedMethod, "LoadLibraryA") == 0)
 				{
-					ImGui::OpenPopup("Injection Successful");
+					// "C:\\Users\\petre\\OneDrive\\Desktop\\WinInternalsDll.dll"
+					if (InjectDLL(process_id, szFile))
+					{
+						ImGui::OpenPopup("Injection Successful");
+					}
+					else
+					{
+						ImGui::OpenPopup("Injection Failed");
+					}
 				}
-				else
+				else if (strcmp(selectedMethod, "Method 2") == 0)
 				{
-					ImGui::OpenPopup("Injection Failed");
+					// Call Method2
+				}
+				else if (strcmp(selectedMethod, "Method 3") == 0)
+				{
+					// Call Method3
+				}
+				else if (strcmp(selectedMethod, "Method 4") == 0)
+				{
+					// Call Method4
+				}
+				else if (strcmp(selectedMethod, "Method 5") == 0)
+				{
+					// Call Method5
+				}
+				else if (strcmp(selectedMethod, "Random Method") == 0)
+				{
+					// Call RandomMethod
 				}
 			}
 			else
 			{
+				printf("Dll Path: ");
+				printf("%s \n", szFile);
 				ImGui::OpenPopup("Injection Failed - Invalid Path");
 			}
 		}
 		else
 		{
+			if (process_id > 100000)
+				printf("Invalid PID\n");
+			
 			ImGui::OpenPopup("Injection Failed - Invalid PID");
 		}
 
@@ -470,8 +514,26 @@ void gui::Render() noexcept
 		ImGui::EndPopup();
 	}
 
+	// Debug
+	if (ImGui::Checkbox(" Debug console", &debug_cmd))
+	{
+		AllocConsole();
+		freopen_s((FILE**)stdout, "conout$", "w", stdout);
+		HWND hwnd = GetConsoleWindow();
+		_SMALL_RECT Rect;
+		Rect.Top = 0;
+		Rect.Left = 0;
+		Rect.Bottom = 10;
+		Rect.Right = 33;
+		SetConsoleWindowInfo(GetStdHandle(STD_OUTPUT_HANDLE), TRUE, &Rect);
+	}
+	
+	static bool richPresenceEnabled = false;
 
+	if (ImGui::Checkbox("Enable Discord Rich Presence", &richPresenceEnabled)) 
+	{
 
+	}
 
 
 

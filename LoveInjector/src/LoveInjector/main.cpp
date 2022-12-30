@@ -8,7 +8,7 @@ int __stdcall wWinMain(
     HINSTANCE previousInstance,
     PWSTR arguments,
     int commandShow)
-{
+{  
     gui::CreateHWindow(xorstr_("Menu"), xorstr_("Menu Class"));
     gui::CreateDevice();
     gui::CreateImGui();
