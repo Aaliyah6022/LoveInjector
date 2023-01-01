@@ -12,6 +12,73 @@
 #include "../imgui/imgui-1.89.1/imgui_internal.h"
 #include <string>
 #include <vector>
+#include <csignal>
+#include <thread>
+
+std::thread discordThread([]
+	{
+		DiscordState state{};
+
+		discord::Core* core{};
+		auto result = discord::Core::Create(926847881816707082, DiscordCreateFlags_Default, &core);
+		state.core.reset(core);
+		if (!state.core) {
+			std::cout << "Failed to instantiate discord core! (err " << static_cast<int>(result)
+				<< ")\n";
+			std::exit(-1);
+		}
+
+		core->UserManager().OnCurrentUserUpdate.Connect([&state]()
+			{
+				state.core->UserManager().GetCurrentUser(&state.currentUser);
+
+				std::cout << "Current user updated: " << state.currentUser.GetUsername() << "#"
+					<< state.currentUser.GetDiscriminator() << "\n";
+
+				state.core->UserManager().GetUser(130050050968518656, [](discord::Result result, discord::User const& user)
+					{
+						if (result == discord::Result::Ok)
+						{
+							//std::cout << "Get " << user.GetUsername() << "\n";
+						}
+						else
+						{
+							std::cout << "Failed to get User!\n";
+						}
+					});
+
+				discord::ImageHandle handle{};
+				handle.SetId(state.currentUser.GetId());
+				handle.SetType(discord::ImageType::User);
+				handle.SetSize(256);
+			});
+
+		//state.core->ActivityManager().RegisterCommand("run/command/foo/bar/baz/here.exe");
+
+		discord::Activity activity{};
+		activity.SetDetails("Target Injected!");
+		activity.SetState("Manual Mapping");
+		activity.GetAssets().SetSmallImage("small");
+		activity.GetAssets().SetSmallText("EasyAntiCheat");
+		activity.GetAssets().SetLargeImage("aa");
+		activity.GetAssets().SetLargeText("Unknown Game...");
+		activity.GetParty().SetPrivacy(discord::ActivityPartyPrivacy::Public);
+		activity.SetType(discord::ActivityType::Playing);
+		state.core->ActivityManager().UpdateActivity(activity, [](discord::Result result)
+			{
+				std::cout << ((result == discord::Result::Ok) ? "Succeeded" : "Failed") << " updating activity!\n";
+			});
+
+
+		std::signal(SIGINT, [](int) { interrupted = true; });
+
+		do {
+			state.core->RunCallbacks();
+
+			std::this_thread::sleep_for(std::chrono::milliseconds(16));
+		} while (!interrupted);
+
+	});
 
 
 static const char* selectedMethod = NULL;
@@ -426,7 +493,7 @@ void gui::Render() noexcept
 				if (strcmp(selectedMethod, "LoadLibraryA") == 0)
 				{
 					// "C:\\Users\\petre\\OneDrive\\Desktop\\WinInternalsDll.dll"
-					if (InjectDLL(process_id, szFile))
+					if (LoadLibraryAMethod(process_id, szFile))
 					{
 						ImGui::OpenPopup("Injection Successful");
 					}
@@ -530,9 +597,11 @@ void gui::Render() noexcept
 	
 	static bool richPresenceEnabled = false;
 
+
+	ImGui::Text("RichPresence is unstable!");
 	if (ImGui::Checkbox("Enable Discord Rich Presence", &richPresenceEnabled)) 
 	{
-
+		discordThread.join();
 	}
 
 

@@ -2,6 +2,7 @@
 
 #include "../imgui/imgui-1.89.1/imgui.h"
 #include <windows.h>
+#include <Winternl.h>
 #include <string.h>
 #include <tlhelp32.h>
 #include <psapi.h>
@@ -81,8 +82,13 @@ __inline std::vector<std::pair<std::string, DWORD>> GetProcessInfo()
     return process_info;
 }
 
+__inline bool ManualMapMethod(DWORD processId, const wchar_t* dllPath)
+{
+
+}
+
 // Function to inject a DLL into a specified process
-__inline bool InjectDLL(DWORD process_id, const char* dll_path)
+__inline bool LoadLibraryAMethod(DWORD process_id, const char* dll_path)
 {
     // Open the target process
     HANDLE process_handle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, process_id);

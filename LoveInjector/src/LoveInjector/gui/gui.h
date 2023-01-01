@@ -10,6 +10,20 @@
 #include "../xorstr/xorstr.hpp"
 #include "../utils.h"
 
+#pragma warning ( disable : 4005 )
+
+#include "../discord/discord.h"
+
+struct DiscordState {
+	discord::User currentUser;
+
+	std::unique_ptr<discord::Core> core;
+};
+
+namespace {
+	volatile bool interrupted{ false };
+}
+
 namespace gui
 {
 	constexpr int WIDTH = 800;
