@@ -82,7 +82,7 @@ std::thread discordThread([]
 
 
 static const char* selectedMethod = NULL;
-const char* methods[] = {"LoadLibraryA", "Method 2", "Method 3", "Method 4", "Method 5", "Random Method"};
+const char* methods[] = {"LoadLibraryA", "ManualMap", "Method 3", "Method 4", "Method 5", "Random Method"};
 static char buf[256];
 ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoBackground;
 
@@ -502,9 +502,16 @@ void gui::Render() noexcept
 						ImGui::OpenPopup("Injection Failed");
 					}
 				}
-				else if (strcmp(selectedMethod, "Method 2") == 0)
+				else if (strcmp(selectedMethod, "ManualMap") == 0)
 				{
-					// Call Method2
+					if (ManualMapMethod(process_id, szFile))
+					{
+						ImGui::OpenPopup("Injection Successful");
+					}
+					else
+					{
+						ImGui::OpenPopup("Injection Failed");
+					}
 				}
 				else if (strcmp(selectedMethod, "Method 3") == 0)
 				{
