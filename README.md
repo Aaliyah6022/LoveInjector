@@ -1,5 +1,7 @@
 # LoveInjector
 
+I will add more injection methods if someone requests them :)
+
 # Getting started
 Run the file called "Win-GenProjects.bat" in the folder called "scripts".
 
